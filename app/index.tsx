@@ -1,80 +1,68 @@
-import { Ionicons } from "@expo/vector-icons";
-import { useRouter } from "expo-router";
-import React, { useState } from "react";
-import { KeyboardAvoidingView, Platform, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { FontAwesome } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
+import { StatusBar } from 'expo-status-bar';
+import React from 'react';
+import { Image, Text, TouchableOpacity, View } from 'react-native';
 
-export default function LoginScreen() {
+export default function WelcomeScreen() {
   const router = useRouter();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
 
   return (
-    <KeyboardAvoidingView
-      behavior={Platform.OS === "ios" ? "padding" : undefined}
-      className="flex-1 bg-background-light justify-center px-6"
-    >
-      {/* Header */}
-      <View className="items-center mb-12">
-        <Text className="text-4xl font-bold text-primary mb-2">AprovAqui</Text>
-        <Text className="text-text-light text-base opacity-70">Bem-vindo de volta 👋</Text>
-      </View>
+    <View className="flex-1 items-center justify-center bg-[#003761] px-6">
+      <StatusBar style="light" />
 
-      {/* Inputs */}
-      <View className="w-full mb-6">
-        <Text className="text-text-light mb-2 font-semibold">Email</Text>
-        <TextInput
-          className="border border-subtle-light bg-white rounded-xl px-4 py-5 text-text-light focus:border-primary"
-          placeholder="seu@email.com"
-          placeholderTextColor="#9ca3af"
-          keyboardType="email-address"
-          autoCapitalize="none"
-          value={email}
-          onChangeText={setEmail}
-        />
-      </View>
+      {/* Título */}
+      <Text className="text-white text-3xl font-bold mb-8 text-center">
+        Bem-vindo ao
+      </Text>
 
-      <View className="w-full mb-8">
-        <Text className="text-text-light mb-2 font-semibold">Senha</Text>
-        <View className="flex-row items-center border border-subtle-light bg-white rounded-xl px-4">
-          <TextInput
-            className="flex-1 py-5 text-text-light"
-            placeholder="••••••••"
-            placeholderTextColor="#9ca3af"
-            secureTextEntry={!showPassword}
-            value={password}
-            onChangeText={setPassword}
-          />
-          <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
-            <Ionicons
-              name={showPassword ? "eye-off-outline" : "eye-outline"}
-              size={22}
-              color="#6b7280"
-            />
-          </TouchableOpacity>
-        </View>
-      </View>
+      {/* Logo */}
+      <Image
+        source={{
+          uri: 'https://upload.wikimedia.org/wikipedia/commons/a/ab/Logo_TV_2015.png',
+        }}
+        className="w-32 h-32 rounded-full mb-10 border-4 border-[#00F7FF]"
+      />
 
-      {/* Button */}
+      {/* Botão Entrar */}
       <TouchableOpacity
-        className="bg-primary py-3.5 rounded-xl mb-4 shadow-md shadow-primary/30"
-        onPress={() => router.push("/home")}
-        activeOpacity={0.8}
+        onPress={() => router.push('/login')}
+        className="bg-[#FF00B6] w-64 py-3 rounded-full mb-4 shadow-md active:opacity-80"
       >
-        <Text className="text-white text-center font-bold text-lg">Entrar</Text>
+        <Text className="text-white text-lg font-semibold text-center">
+          Entrar
+        </Text>
       </TouchableOpacity>
 
-      {/* Links */}
-      <TouchableOpacity className="mb-4" onPress={() => router.push("/recuperarSenha")}>
-        <Text className="text-center text-primary font-medium">Esqueceu a senha?</Text>
+      {/* Botão Criar Conta */}
+      <TouchableOpacity
+        onPress={() => router.push('/register')}
+        className="border border-white w-64 py-3 rounded-full mb-6"
+      >
+        <Text className="text-white text-base font-medium text-center">
+          Criar conta
+        </Text>
       </TouchableOpacity>
 
-      <View className="flex-row justify-center">
-        <Text className="text-text-light">Ainda não tem conta? </Text>
-        <TouchableOpacity onPress={() => router.push("/cadastro")}>
-          <Text className="text-primary font-semibold">Cadastre-se</Text>
+      {/* Linha divisória */}
+      <View className="flex-row items-center mb-6 w-64">
+        <View className="flex-1 h-px bg-white/30" />
+        <Text className="text-white mx-3 text-sm">ou</Text>
+        <View className="flex-1 h-px bg-white/30" />
+      </View>
+
+      {/* Botões sociais */}
+      <View className="flex-row gap-4">
+        <TouchableOpacity className="flex-row items-center bg-[#DB4437] px-5 py-2 rounded-full">
+          <FontAwesome name="google" size={20} color="#fff" />
+          <Text className="text-white ml-2 font-semibold">Google</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity className="flex-row items-center bg-[#4267B2] px-5 py-2 rounded-full">
+          <FontAwesome name="facebook" size={20} color="#fff" />
+          <Text className="text-white ml-2 font-semibold">Facebook</Text>
         </TouchableOpacity>
       </View>
-    </KeyboardAvoidingView>
+    </View>
   );
 }
