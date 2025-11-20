@@ -36,7 +36,7 @@ export const cadastroUsuario  = async ({ nome, email,  senha }) => {
 
 export const loginUsuario = async ({ email, senha }) => {
     try {
-        const response = await api.get('/clientes', {
+        const response = await api.post('/clientes/login', {
             email: email,
             senha: senha,
         });
@@ -44,18 +44,19 @@ export const loginUsuario = async ({ email, senha }) => {
         if (response.status === 200) {
             const { token, usuario } = response.data;
 
-            try {
-                await SecureStore.setItemAsync('token', token);
-                await SecureStore.setItemAsync('nome', usuario?.nome || "");
-                await SecureStore.setItemAsync('email', usuario?.email || "");
-                await SecureStore.setItemAsync('usuarioId', usuario?.id.toString() || "");
-                // await SecureStore.setItemAsync('tipo', usuario?.tipo || "");
-                // await SecureStore.setItemAsync('avatar', usuario?.foto || "");
+            console.log("Resposta do login:", { usuario, token });
 
-                console.log("Dados do usuário salvos:", usuario);
-            } catch (storeErr) {
-                console.error('Erro ao salvar dados no SecureStore:', storeErr);
-            }
+
+        try {
+            await SecureStore.setItemAsync('token', String(token));
+            console.log("Token salvo no SecureStore:", token);
+            await SecureStore.setItemAsync('nome', String(usuario?.nome ?? ""));
+            await SecureStore.setItemAsync('email', String(usuario?.email ?? ""));
+            await SecureStore.setItemAsync('usuarioId', String(usuario?.id ?? ""));
+        } catch (error) {
+            console.log("Erro ao salvar no SecureStore:", error);
+        }
+
 
             return response.data;
         } else {

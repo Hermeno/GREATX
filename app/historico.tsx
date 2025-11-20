@@ -3,7 +3,7 @@ import { View, Text, Image, FlatList, ActivityIndicator } from 'react-native';
 import * as Animatable from 'react-native-animatable';
 import { Feather } from '@expo/vector-icons';
 import Layout from './home/_template';
-import { getHistoricoBeneficios } from '@/service/historico'; // 🔹 você criará esse serviço
+import { getHistoricoRelatorio } from '@/service/historico'; // 🔹 você criará esse serviço
 
 export default function Historico() {
   const [historico, setHistorico] = useState<any[]>([]);
@@ -12,7 +12,7 @@ export default function Historico() {
   useEffect(() => {
     const fetchHistorico = async () => {
       try {
-        const data = await getHistoricoBeneficios();
+        const data = await getHistoricoRelatorio();
         setHistorico(data);
       } catch (error) {
         console.error('Erro ao carregar histórico:', error);

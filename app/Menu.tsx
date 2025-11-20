@@ -18,14 +18,15 @@ export default function Welcome() {
     {
       title: '% Promoções',
       icon: <FontAwesome name="percent" size={26} color="#FF7A00" />,
-      image: 'https://images.unsplash.com/photo-1562967916-eb82221dfb1d',
-      link: './MenuOptions',
+      image: 'https://images.unsplash.com/photo-1600891964599-f61ba0e24092?auto=format&fit=crop&w=800&q=80',
+      link: './promocao',
     },
+
     {
       title: 'Meu Histórico',
       icon: <MaterialCommunityIcons name="history" size={26} color="#FF7A00" />,
       image: 'https://images.unsplash.com/photo-1504674900247-0877df9cc836',
-      link: './MenuOptions',
+      link: './historico',
     },
   ];
 
