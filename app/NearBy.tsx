@@ -44,7 +44,7 @@ export default function WelcomeBarX() {
 
   return (
     <Layout>
-      <View className="flex-1 bg-[#f8f9fa] px-6 pt-20 items-center justify-between">
+      <View className="flex-1 bg-[#FFFFFF] px-6 pt-5 items-center justify-between">
         {/* Parte superior: ícone e boas-vindas */}
         <View className="items-center mt-8">
           <View className="bg-orange-100 rounded-full p-6 mb-6 shadow-sm">
@@ -68,7 +68,7 @@ export default function WelcomeBarX() {
         {/* Imagem decorativa opcional */}
         <Image
           source={{ uri: 'https://cdn-icons-png.flaticon.com/512/3063/3063708.png' }}
-          className="w-52 h-52 mt-10"
+          className="w-52 h-52 mt-2"
           resizeMode="contain"
         />
 

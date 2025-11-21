@@ -4,9 +4,14 @@ import React from 'react';
 import { Animated, Image, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import * as Animatable from 'react-native-animatable';
 import Layout from './home/_template';
+import * as SecureStore from "expo-secure-store";
+
 
 export default function Welcome() {
   const router = useRouter();
+
+  // use SecureStore.deleteItemAsync("tableNumber");
+
 
   const menuItems = [
     {

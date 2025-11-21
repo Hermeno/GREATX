@@ -76,7 +76,7 @@ export default function Order() {
 
   return (
     <Layout>
-      <View className="flex-1 bg-[#F3F4F6] dark:bg-gray-900">
+      <View className="flex-1 bg-[#ffffff] ">
         {/* Cabeçalho */}
         <View className="items-center py-10 px-4">
           <Animatable.Text
@@ -121,6 +121,8 @@ export default function Order() {
                     Subtotal: R$ {(precoUnit * item.qtd).toFixed(2)}
                   </Text>
                 </View>
+                {/* create one horizontal line  to separate */}
+                <View className="w-1 bg-gray-200 dark:bg-gray-700 h-full" />
               </Animatable.View>
             );
           })}

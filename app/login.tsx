@@ -4,6 +4,7 @@ import { StatusBar } from 'expo-status-bar';
 import React, { useState } from 'react';
 import { Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { loginUsuario } from '@/service/auth'
+import { Background } from '@react-navigation/elements';
 
 export default function LoginScreen() {
   const router = useRouter();
@@ -28,7 +29,7 @@ export default function LoginScreen() {
 
   return (
     <View className="flex-1 bg-[#003761] px-8 justify-center">
-      <StatusBar style="light" />
+      <StatusBar style="light" backgroundColor="#003761" />
 
       {/* Título */}
       <Text className="text-white text-3xl font-bold mb-10 text-center">

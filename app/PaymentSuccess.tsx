@@ -12,7 +12,7 @@ export default function PaymentSuccess() {
 
   return (
     <Layout>
-      <View className="flex-1 bg-[#f7f7f7] justify-center items-center px-6">
+      <View className="flex-1 bg-[#FFFFFF] justify-center items-center px-6">
         {/* Ícone de sucesso */}
         <View className="bg-green-500 w-32 h-32 rounded-full items-center justify-center shadow-lg mb-8">
           <MaterialCommunityIcons name="check-circle-outline" size={80} color="#fff" />
