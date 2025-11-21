@@ -7,8 +7,8 @@ import Layout from './home/_template';
 export default function PaymentSuccess() {
   const router = useRouter();
 
-  const goToMenu = () => router.push('./Welcome'); // voltar ao menu
-  const goToOrders = () => router.push('./Order'); // ex: histórico de pedidos
+  const goToMenu = () => router.push('./MenuOptions'); // voltar ao menu
+  const goToOrders = () => router.push('./pedidos'); // ex: histórico de pedidos
 
   return (
     <Layout>

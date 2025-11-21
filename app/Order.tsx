@@ -1,83 +1,162 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
-import React from 'react';
-import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { useRouter, useLocalSearchParams } from 'expo-router';
+import React, { useEffect, useState } from 'react';
+import { ScrollView, Text, TouchableOpacity, View, ActivityIndicator } from 'react-native';
+import * as Animatable from 'react-native-animatable';
 import Layout from './home/_template';
+import { criarPedido } from '@/service/pedidos';
 
-const data = [
-  { id: '1', factura: 'frasjhavdhs', Qtd: 2, preco: 10.0 },
-  { id: '2', factura: 'vbnvbvcv', Qtd: 1, preco: 5.0 },
-  { id: '3', factura: 'bbbn.fxl;d', Qtd: 3, preco: 15.0 },
-  { id: '4', factura: 'frsdfasf', Qtd: 1, preco: 20.0 },
-];
+interface ProdutoCarrinho {
+  produto: {
+    id: number;
+    nome: string;
+    preco?: number;
+  };
+  qtd: number;
+}
 
-export default function ConfirmOrder() {
+export default function Order() {
   const router = useRouter();
-  const goNext = () => router.push('./PaymentSuccess'); // próxima tela
-  const goToMenu = () => router.push('./Welcome'); // voltar ao menu
+  const params = useLocalSearchParams<{ carrinho: string; nome?: string }>();
+  const [carrinho, setCarrinho] = useState<ProdutoCarrinho[]>([]);
+  const [loading, setLoading] = useState(false);
 
-  // Calcula o total
-  const total = data.reduce((acc, item) => acc + item.preco * item.Qtd, 0);
+  useEffect(() => {
+    if (params.carrinho) {
+      try {
+        setCarrinho(JSON.parse(params.carrinho));
+      } catch (err) {
+        console.error('Erro ao parsear carrinho:', err);
+      }
+    }
+  }, [params.carrinho]);
+
+  const total = carrinho.reduce(
+    (acc, item) => acc + (Number(item.produto.preco ?? 0) * item.qtd),
+    0
+  );
+
+  const goToMenu = () => router.replace('./Menu');
+
+  const goNext = async () => {
+    if (carrinho.length === 0) return;
+
+    setLoading(true);
+    try {
+      // Agora NÃO passa mais clienteId
+      await criarPedido(carrinho);
+
+      router.push('./PaymentSuccess');
+    } catch (err) {
+      console.error('Falha ao enviar pedido:', err);
+      alert('Erro ao confirmar pedido. Tente novamente.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (carrinho.length === 0) {
+    return (
+      <Layout>
+        <View className="flex-1 justify-center items-center py-20 bg-[#F3F4F6] dark:bg-gray-900">
+          <Animatable.View animation="bounceIn" duration={800}>
+            <MaterialCommunityIcons name="cart-off" size={80} color="#FF6F00" />
+          </Animatable.View>
+          <Animatable.Text
+            animation="fadeInLeft"
+            duration={1000}
+            className="text-orange-600 text-2xl font-bold mt-4 text-center"
+          >
+            Seu carrinho está vazio.
+          </Animatable.Text>
+        </View>
+      </Layout>
+    );
+  }
 
   return (
     <Layout>
-      <View className="flex-1 bg-[#f7f7f7]">
+      <View className="flex-1 bg-[#F3F4F6] dark:bg-gray-900">
         {/* Cabeçalho */}
-        <View className="items-center justify-center py-10 ">
-          <Text className="text-4xl text-gray-900 font-extrabold">Seu Pedido</Text>
+        <View className="items-center py-10 px-4">
+          <Animatable.Text
+            animation="fadeInLeft"
+            duration={800}
+            className="text-5xl font-extrabold text-gray-900 dark:text-white text-center"
+          >
+            Seu Pedido
+          </Animatable.Text>
+          {params.nome && (
+            <Text className="text-gray-600 dark:text-gray-400 text-xl mt-2">
+              {params.nome}
+            </Text>
+          )}
         </View>
 
-        {/* Conteúdo */}
-        <ScrollView contentContainerStyle={{ paddingBottom: 180 }} className="px-4 mt-6">
-          <View className="rounded-3xl p-5 shadow-md bg-white">
-            <Text className="text-2xl font-bold mb-4">Resumo do Pedido - Fernando</Text>
+        {/* Lista de produtos */}
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 160 }}
+        >
+          {carrinho.map((item, index) => {
+            const precoUnit = Number(item.produto.preco ?? 0);
+            return (
+              <Animatable.View
+                key={item.produto.id}
+                animation="fadeInUp"
+                delay={index * 100}
+                className="flex-row items-center bg-white dark:bg-gray-800 rounded-3xl overflow-hidden shadow-xl mb-6 h-36"
+              >
+                <View className="flex-1 px-5 py-4 justify-between">
+                  <Text className="text-gray-900 dark:text-white text-2xl font-bold">
+                    {item.produto.nome}
+                  </Text>
+                  <Text className="text-gray-600 dark:text-gray-400 text-xl mt-1">
+                    Preço unitário: R$ {precoUnit.toFixed(2)}
+                  </Text>
+                  <Text className="text-gray-600 dark:text-gray-400 text-xl mt-1">
+                    Quantidade: {item.qtd}
+                  </Text>
+                  <Text className="text-gray-900 dark:text-white text-xl font-bold mt-2">
+                    Subtotal: R$ {(precoUnit * item.qtd).toFixed(2)}
+                  </Text>
+                </View>
+              </Animatable.View>
+            );
+          })}
 
-            {/* Tabela */}
-            <View className="border-b border-gray-300 pb-2 mb-2">
-              <View className="flex-row">
-                <Text className="flex-2 font-bold text-gray-900 text-lg">Factura</Text>
-                <Text className="flex-1 font-bold text-gray-900 text-lg text-center">Qtd</Text>
-                <Text className="flex-1 font-bold text-gray-900 text-lg text-right">Preço</Text>
-              </View>
-            </View>
-
-            {/* Linhas de dados */}
-            {data.map((item) => (
-              <View key={item.id} className="flex-row py-3 border-b border-gray-200">
-                <Text className="flex-2 text-gray-800 text-base">{item.factura}</Text>
-                <Text className="flex-1 text-gray-800 text-base text-center">{item.Qtd}</Text>
-                <Text className="flex-1 text-gray-800 text-base text-right">
-                  R${(item.preco * item.Qtd).toFixed(2)}
-                </Text>
-              </View>
-            ))}
-
-            {/* Total */}
-            <View className="flex-row justify-between py-4 border-t border-gray-300 mt-2">
-              <Text className="text-gray-900 font-bold text-xl">Total:</Text>
-              <Text className="text-gray-900 font-bold text-xl">R${total.toFixed(2)}</Text>
-            </View>
-
-            {/* Botão Confirmar Pedido */}
-            <TouchableOpacity
-              onPress={goNext}
-              activeOpacity={0.85}
-              className="mt-6 py-5 rounded-3xl bg-green-600 to-yellow-400 items-center shadow-md flex-row justify-center"
-            >
-              <Text className="text-white text-xl font-bold text-center">Confirmar Pedido</Text>
-            </TouchableOpacity>
-          </View>
+          {/* Total */}
+          <Animatable.View
+            animation="fadeInUp"
+            duration={800}
+            className="flex-row justify-between py-4 px-5 bg-white rounded-3xl shadow-md mt-2 mb-6"
+          >
+            <Text className="text-gray-900 font-bold text-2xl">Total:</Text>
+            <Text className="text-gray-900 font-bold text-2xl">
+              R$ {total.toFixed(2)}
+            </Text>
+          </Animatable.View>
         </ScrollView>
 
-        {/* Botão fixo Fechar Conta */}
-        <View className="absolute bottom-6 left-0 right-0 items-center">
+        <View className="absolute bottom-6 left-0 right-0 px-5">
+          {/* Confirmar Pedido */}
+          <TouchableOpacity
+            onPress={goNext}
+            className="flex-row items-center justify-center w-full py-4 rounded-3xl shadow-xl bg-green-600"
+          >
+            <MaterialCommunityIcons name="check-circle-outline" size={36} color="#fff" />
+            <Text className="text-white text-2xl font-extrabold ml-4">
+              Confirmar Pedido
+            </Text>
+          </TouchableOpacity>
+
+          {/* Fechar Conta */}
           <TouchableOpacity
             onPress={goToMenu}
-            activeOpacity={0.85}
-            className="flex-row items-center justify-center w-4/5 py-5 rounded-3xl bg-[#d64343ff] from-red-600 to-yellow-500 shadow-lg"
+            className="flex-row items-center justify-center w-full py-5 mt-3 rounded-3xl shadow-xl bg-[#d64343ff] mb-4"
           >
-            <MaterialCommunityIcons name="logout" size={26} color="#fff" />
-            <Text className="text-white text-xl font-bold ml-3 text-center">
+            <MaterialCommunityIcons name="logout" size={32} color="#fff" />
+            <Text className="text-white text-2xl font-extrabold ml-3 text-center">
               Fechar Conta
             </Text>
           </TouchableOpacity>

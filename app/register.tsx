@@ -27,7 +27,7 @@ export default function RegisterScreen() {
       cadastroUsuario(newUser)
         .then(() => {
           alert("Cadastro realizado com sucesso!");
-          router.push("/");
+          router.push("/login");
         })
         .catch((error) => {
           console.error("Erro no cadastro:", error);

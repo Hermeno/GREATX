@@ -1,86 +1,160 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
-import React from 'react';
-import { Image, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { useRouter, useLocalSearchParams } from 'expo-router';
+import React, { useEffect, useState } from 'react';
+import { Image, ScrollView, Text, TouchableOpacity, View, ActivityIndicator } from 'react-native';
+import * as Animatable from 'react-native-animatable';
 import Layout from './home/_template';
+import { getProdutosByCategoria } from '@/service/produtos';
 
-interface MenuItem {
+interface Produto {
   id: number;
-  name: string;
-  price: number;
-  qtd: number;
-  image: string;
+  nome: string;
+  preco?: number;
+  imagem: string;
 }
-
-const items: MenuItem[] = [
-  { id: 1, name: 'Prato de Sanduíche', price: 347, qtd: 2, image: 'https://images.unsplash.com/photo-1600891964599-f61ba0e24092' },
-  { id: 2, name: 'Hambúrguer Especial', price: 250, qtd: 1, image: 'https://images.unsplash.com/photo-1562967916-eb82221dfb1d' },
-  { id: 3, name: 'Batata Frita com Molho', price: 150, qtd: 3, image: 'https://images.unsplash.com/photo-1504674900247-0877df9cc836' },
-];
 
 export default function OpenTab() {
   const router = useRouter();
-  const goToOrder = () => router.push('./Order');
-  const goToProfile = () => router.push('./Profile');
-  const goBack = () => router.back();
+  const params = useLocalSearchParams<{ id: string; nome: string }>();
+  const categoriaId = Number(params.id);
+  const categoriaNome = params.nome;
+
+  const [loading, setLoading] = useState(true);
+  const [produtos, setProdutos] = useState<Produto[]>([]);
+  const [carrinho, setCarrinho] = useState<{ produto: Produto; qtd: number }[]>([]);
+
+  useEffect(() => {
+    const fetchProdutos = async () => {
+      if (!categoriaId) return;
+      try {
+        const data = await getProdutosByCategoria(categoriaId);
+        setProdutos(data);
+      } catch (error) {
+        console.error('Erro ao buscar produtos:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchProdutos();
+  }, [categoriaId]);
+
+  const adicionarAoCarrinho = (produto: Produto) => {
+    if (!produto.preco) {
+      console.warn('Produto sem preço:', produto);
+      return;
+    }
+
+    setCarrinho((prev) => {
+      const existente = prev.find((item) => item.produto.id === produto.id);
+      if (existente) {
+        return prev.map((item) =>
+          item.produto.id === produto.id
+            ? { ...item, qtd: item.qtd + 1 }
+            : item
+        );
+      } else {
+        return [...prev, { produto, qtd: 1 }];
+      }
+    });
+  };
+
+  const removerDoCarrinho = (produto: Produto) => {
+    setCarrinho((prev) =>
+      prev
+        .map((item) =>
+          item.produto.id === produto.id
+            ? { ...item, qtd: item.qtd - 1 }
+            : item
+        )
+        .filter((item) => item.qtd > 0)
+    );
+  };
+
+  const qtdNoCarrinho = (produtoId: number) => {
+    const item = carrinho.find((i) => i.produto.id === produtoId);
+    return item ? item.qtd : 0;
+  };
+
+  const irParaOrder = () => {
+    router.push({
+      pathname: './Order',
+      params: { carrinho: JSON.stringify(carrinho) },
+    });
+  };
+
+  if (loading) return (
+    <Layout>
+      <View className="flex-1 justify-center items-center">
+        <ActivityIndicator size="large" color="#FF6F00" />
+        <Animatable.Text animation="fadeInLeft" duration={1000} className="text-orange-600 text-xl mt-4 font-bold text-center">
+          Aguarde um instante, carregando os produtos...
+        </Animatable.Text>
+      </View>
+    </Layout>
+  );
+
+  if (produtos.length === 0) return (
+    <Layout>
+      <View className="flex-1 justify-center items-center py-20">
+        <Animatable.View animation="bounceIn" duration={800}>
+          <MaterialCommunityIcons name="alert-circle-outline" size={80} color="#FF6F00" />
+        </Animatable.View>
+        <Animatable.Text animation="fadeInLeft" duration={1200} className="text-orange-600 text-xl mt-4 font-bold text-center">
+          Nenhum produto disponível no momento.
+        </Animatable.Text>
+      </View>
+    </Layout>
+  );
 
   return (
     <Layout>
-      <View className="flex-1 px-4 pt-10 pb-24 bg-[#F3F4F6] dark:bg-gray-900">
-        {/* Cabeçalho */}
-        <View className="items-center mb-6">
-          <Text className="text-4xl font-extrabold text-gray-900 dark:text-white text-center">
-            Cardápio
-          </Text>
-          <View className="flex-row justify-between w-full mt-6 space-x-4">
-            <TouchableOpacity
-              onPress={goBack}
-              activeOpacity={0.8}
-              className="flex-1 bg-white dark:bg-gray-700 rounded-3xl py-4 items-center shadow-lg"
-            >
-              <Text className="text-gray-500 dark:text-gray-300 font-semibold">Voltar</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              onPress={goToProfile}
-              activeOpacity={0.8}
-              className="flex-1 bg-[#FF6F00] rounded-3xl py-4 items-center shadow-lg"
-            >
-              <Text className="text-white font-semibold">Promoções</Text>
-            </TouchableOpacity>
-          </View>
+      <View className="flex-1 bg-[#F3F4F6] dark:bg-gray-900">
+        {/* Título */}
+        <View className="items-center py-10 px-4">
+          <Animatable.Text animation="fadeInLeft" duration={800} className="text-5xl font-extrabold text-gray-900 dark:text-white text-center">
+            {categoriaNome}
+          </Animatable.Text>
         </View>
 
-        {/* Lista de itens */}
-        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 180 }}>
-          {items.map((item) => (
-            <TouchableOpacity
-              key={item.id}
-              onPress={goToOrder}
-              activeOpacity={0.85}
-              className="flex-row items-center bg-white dark:bg-gray-800 rounded-3xl overflow-hidden shadow-lg mb-5 h-28"
-            >
-              <Image source={{ uri: item.image }} className="w-28 h-full rounded-l-3xl" resizeMode="cover" />
-              <View className="flex-1 px-5 py-4 justify-center">
-                <Text className="text-gray-900 dark:text-white text-xl font-bold">{item.name}</Text>
-                <Text className="text-gray-600 dark:text-gray-400 mt-1 text-lg">R$: {item.price}</Text>
-                <Text className="text-gray-600 dark:text-gray-400 mt-1 text-lg">Qtd: {item.qtd}</Text>
+        {/* Lista de produtos */}
+        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 140 }}>
+          {produtos.map((item, index) => (
+            <Animatable.View key={item.id} animation="fadeInUp" delay={index * 100} className="flex-row items-center bg-white dark:bg-gray-800 rounded-3xl overflow-hidden shadow-xl mb-6 h-36">
+              <Image source={{ uri: item.imagem }} className="w-36 h-full rounded-l-3xl" resizeMode="cover" />
+              <View className="flex-1 px-5 py-4 justify-between">
+                <Text className="text-gray-900 dark:text-white text-2xl font-bold">{item.nome}</Text>
+                <Text className="text-gray-600 dark:text-gray-400 mt-1 text-xl">R$ {Number(item.preco ?? 0).toFixed(2)}</Text>
+
+                {/* Quantidade */}
+                <View className="flex-row items-center mt-3 space-x-4">
+                  <TouchableOpacity onPress={() => removerDoCarrinho(item)} className="bg-gray-300 rounded-full w-12 h-12 items-center justify-center">
+                    <Animatable.Text animation="pulse" iterationCount={1} duration={200} className="text-2xl font-bold">-</Animatable.Text>
+                  </TouchableOpacity>
+                  <Animatable.Text animation="pulse" duration={200} iterationCount={1} className="text-gray-800 text-2xl font-bold">
+                    {qtdNoCarrinho(item.id)}
+                  </Animatable.Text>
+                  <TouchableOpacity onPress={() => adicionarAoCarrinho(item)} className="bg-gray-300 rounded-full w-12 h-12 items-center justify-center">
+                    <Animatable.Text animation="pulse" iterationCount={1} duration={200} className="text-2xl font-bold">+</Animatable.Text>
+                  </TouchableOpacity>
+                </View>
               </View>
-            </TouchableOpacity>
+            </Animatable.View>
           ))}
         </ScrollView>
 
-        {/* Botão Fixo: Finalizar */}
-        <View className="absolute bottom-6 left-0 right-0 items-center">
+        {/* Footer com botão do carrinho */}
+        <Animatable.View animation="bounceInUp" duration={800} className="absolute bottom-6 left-0 right-0 items-center">
           <TouchableOpacity
-            onPress={goToOrder}
-            activeOpacity={0.85}
-className="flex-row items-center justify-center w-4/5 py-4 rounded-3xl bg-[#D84315] shadow-xl"
+            onPress={irParaOrder}
+            disabled={carrinho.length === 0}
+            className={`flex-row items-center justify-center w-10/12 py-6 rounded-3xl shadow-xl ${
+              carrinho.length > 0 ? 'bg-[#D84315]' : 'bg-gray-400'
+            }`}
           >
-            <MaterialCommunityIcons name="cart-check" size={24} color="#fff" />
-            <Text className="text-white text-xl font-semibold ml-2">Finalizar Pedido</Text>
+            <MaterialCommunityIcons name="cart-check" size={28} color="#fff" />
+            <Text className="text-white text-2xl font-extrabold ml-4">Ir para o Carrinho ({carrinho.length})</Text>
           </TouchableOpacity>
-        </View>
+        </Animatable.View>
       </View>
     </Layout>
   );
